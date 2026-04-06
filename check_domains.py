@@ -531,6 +531,9 @@ def main():
                 "nameservers": extra_fields.get("nameservers"),
                 "registrar": extra_fields.get("registrar"),
                 "http_status": domain_entry.get("http_status"),
+                "whois_ok": domain_entry.get("whois_ok"),
+                "ssl_ok": domain_entry.get("ssl_ok"),
+                "http_ok": domain_entry.get("http_ok"),
                 "http_response_time_ms": domain_entry.get("http_response_time_ms"),
                 "resolved_ip": domain_entry.get("resolved_ip")
             })
