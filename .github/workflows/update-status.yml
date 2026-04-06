@@ -8,11 +8,11 @@ on:
       ssl_threshold:
         description: "Days before SSL/WHOIS expiration to trigger an alert"
         required: false
-        default: "9"
+        default: "7"
       response_time:
         description: "HTTP response time in ms to trigger an alert"
         required: false
-        default: "1000"
+        default: "500"
   repository_dispatch:
     types: [self-trigger] 
 
@@ -59,7 +59,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          RESPONSE_THRESHOLD: ${{ github.event.inputs.response_time || '1200' }}
+          RESPONSE_THRESHOLD: ${{ github.event.inputs.response_time || '1000' }}
           DAYS_THRESHOLD: ${{ github.event.inputs.ssl_threshold || '9' }}
         run: python check_domains.py
 
@@ -95,5 +95,5 @@ jobs:
           client-payload: |
             {
               "ssl_threshold": "${{ github.event.inputs.ssl_threshold || '30' }}",
-              "response_time": "${{ github.event.inputs.response_time || '1000' }}"
+              "response_time": "${{ github.event.inputs.response_time || '1200' }}"
             }
