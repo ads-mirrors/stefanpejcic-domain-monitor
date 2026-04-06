@@ -59,8 +59,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          RESPONSE_THRESHOLD: ${{ github.event.inputs.response_time || '1000' }}
-          DAYS_THRESHOLD: ${{ github.event.inputs.ssl_threshold || '29' }}
+          RESPONSE_THRESHOLD: ${{ github.event.inputs.response_time || '1200' }}
+          DAYS_THRESHOLD: ${{ github.event.inputs.ssl_threshold || '9' }}
         run: python check_domains.py
 
       - name: Commit files
