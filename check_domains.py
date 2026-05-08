@@ -5,7 +5,6 @@ from datetime import datetime, timedelta, timezone
 import os
 import re
 import json
-import xml.etree.ElementTree as ET
 import tldextract
 from urllib.parse import urlparse
 import dns.resolver
@@ -193,76 +192,6 @@ def save_domain_history(domain, new_entry, extra_fields):
 
     with open(file_path, "w") as f:
         json.dump(data, f, separators=(",", ":"))
-
-def load_domain_xml(domain):
-    file = f"status/history/{sanitize_filename(domain)}.xml"
-    if os.path.exists(file):
-        tree = ET.parse(file)
-        print(f"[load_domain_xml] For {domain} | reading from XML file: {file}")
-        return tree, tree.getroot()
-
-    root = ET.Element("domain_history")
-    root.set("domain", domain)
-    tree = ET.ElementTree(root)
-    print(f"[load_domain_xml] For {domain} | XML file does not exist: {file}")
-    return tree, root
-
-def save_domain_xml(domain, tree):
-    file = f"status/history/{sanitize_filename(domain)}.xml"
-    root = tree.getroot()
-    now = datetime.now(timezone.utc)
-    cutoff = now - timedelta(days=7)
-
-    detailed, to_aggregate = [], {}
-    for entry in root.findall("entry"):
-        ts_el = entry.find("timestamp")
-        if ts_el is None:
-            detailed.append(entry)  # keep malformed entries untouched
-            continue
-        entry_time = datetime.strptime(ts_el.text, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
-        if entry_time > cutoff:
-            detailed.append(entry)
-        else:
-            date_str = entry_time.strftime("%Y-%m-%d")
-            to_aggregate.setdefault(date_str, []).append(entry)
-
-    aggregated = []
-    for date_str, entries in to_aggregate.items():
-        valid_times, valid_statuses = [], []
-        for e in entries:
-            rt = e.findtext("http_response_time_ms")
-            if rt and rt not in ("None", ""):
-                valid_times.append(float(rt))
-            st = e.findtext("http_status")
-            if st and st not in ("None", ""):
-                valid_statuses.append(int(st))
-
-        avg_resp = round(sum(valid_times) / len(valid_times), 2) if valid_times else None
-        worst_status = max(valid_statuses, key=lambda s: (s >= 500, s >= 400, s)) if valid_statuses else None
-
-        agg = ET.Element("entry")
-        for tag, val in [
-            ("timestamp",             f"{date_str} 23:59:59"),
-            ("http_status",           str(worst_status)),
-            ("http_response_time_ms", str(avg_resp)),
-            ("is_averaged",           "True"),
-        ]:
-            el = ET.SubElement(agg, tag)
-            el.text = val
-        aggregated.append(agg)
-
-    all_entries = sorted(
-        aggregated + detailed,
-        key=lambda e: (e.findtext("timestamp") or ""),
-    )
-    for e in root.findall("entry"):
-        root.remove(e)
-    for e in all_entries:
-        root.append(e)
-
-    ET.indent(tree, space="  ")
-    tree.write(file, encoding="utf-8", xml_declaration=True)
-    print(f"[save_domain_xml] Saved XML history for {domain} → {file}")
 
 def get_outgoing_ip():
     try:
@@ -508,22 +437,7 @@ def main():
     
             # ---- Save JSON for domain --- #
             save_domain_history(domain, domain_entry, extra_fields)
-    
-            # ---- Save XML for domain ----
-            tree, root = load_domain_xml(domain)
-            entry_xml = ET.SubElement(root, "entry")
-            
-            for key, value in domain_entry.items():
-                el = ET.SubElement(entry_xml, key)
-                el.text = str(value)
-            
-            extra_xml = ET.SubElement(root, "extra")
-            for key, value in extra_fields.items():
-                el = ET.SubElement(extra_xml, key)
-                el.text = str(value)
-            
-            save_domain_xml(domain, tree)
-                        
+                            
             combined_results["domains"].append({
                 "domain": domain,
                 "whois_expiry": extra_fields.get("whois_expiry"),
@@ -558,26 +472,5 @@ def main():
             json.dump(combined_results, f, indent=2, default=str)
     except Exception as e:
         print(f"[ERROR] Failed to save status.json: {e}")
-
-    # ---- Save combined data to index.xml ----
-    root = ET.Element("domains_report")
-    root.set("last_updated", combined_results["last_updated"])
-    root.set("ip_address", str(combined_results["ip_address"] or ""))
-
-    for item in combined_results["domains"]:
-        domain_el = ET.SubElement(root, "domain")
-        domain_el.set("name", item["domain"])
-
-        for key, value in item.items():
-            if key == "domain":
-                continue
-            child = ET.SubElement(domain_el, key)
-            child.text = str(value)
-
-    tree = ET.ElementTree(root)
-    tree.write("status/index.xml", encoding="utf-8", xml_declaration=True)
-    print("Generated status/index.xml")
-
-
 if __name__ == "__main__":
     main()
