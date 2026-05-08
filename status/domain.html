@@ -177,7 +177,7 @@
                 <!-- switch buttons -->    
                 <div class="flex gap-2">
                     <div id="change-view-buttons" class="flex items-center gap-1 rounded-lg bg-gray-10 text-xs ring-1 ring-gray-500">
-                        <button type="button" @click="showTable = true; showJSON = false; showCSV = false; showXML = false; showAPI = false" :class="showTable ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 ring-1 ring-transparent'" class="rounded-md px-2 py-1.5 sm:px-3 sm:py-1.5 font-medium flex items-center space-x-2">
+                        <button type="button" @click="showTable = true; showJSON = false; showCSV = false; showAPI = false" :class="showTable ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 ring-1 ring-transparent'" class="rounded-md px-2 py-1.5 sm:px-3 sm:py-1.5 font-medium flex items-center space-x-2">
                             <span class="hidden sm:block">HTML</span>
                         </button>
                     
@@ -186,29 +186,16 @@
                                       showTable = false;
                                       showJSON = true;
                                       showCSV = false;
-                                      showXML = false;
                                       showAPI = false;
                                       if (!jsonContent) await loadJSON();
                                   })()" :class="showJSON ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 ring-1 ring-transparent'" class="rounded-md px-2 py-1.5 sm:px-3 sm:py-1.5 font-medium flex items-center space-x-2">
                             <span class="hidden sm:block">JSON</span>
                         </button>
                     
-                        <button type="button" @click="showTable = false; showJSON = false; showCSV = true; showXML = false; showAPI = false" :class="showCSV ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 ring-1 ring-transparent'" class="rounded-md px-2 py-1.5 sm:px-3 sm:py-1.5 font-medium flex items-center space-x-2">
+                        <button type="button" @click="showTable = false; showJSON = false; showCSV = true; showAPI = false" :class="showCSV ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 ring-1 ring-transparent'" class="rounded-md px-2 py-1.5 sm:px-3 sm:py-1.5 font-medium flex items-center space-x-2">
                             <span class="hidden sm:block">CSV</span>
                         </button>
-                    
-                        <button type="button"
-                          @click="(async () => {
-                                      showTable = false;
-                                      showJSON = false;
-                                      showCSV = false;
-                                      showXML = true;
-                                      showAPI = false;
-                                      if (!xmlContent) await loadXML();
-                                  })()" :class="showXML ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 ring-1 ring-transparent'" class="rounded-md px-2 py-1.5 sm:px-3 sm:py-1.5 font-medium flex items-center space-x-2">
-                            <span class="hidden sm:block">XML</span>
-                        </button>
-                    
+
                         <button type="button" @click="showTable = false; showJSON = false; showCSV = false; showXML = false; showAPI = true" :class="showAPI ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 ring-1 ring-transparent'" class="rounded-md px-2 py-1.5 sm:px-3 sm:py-1.5 font-medium flex items-center space-x-2">
                             <span class="hidden sm:block">API</span>
                         </button>
@@ -277,8 +264,8 @@
                 </table>
             </div>
             
-            <!-- JSON, XML and CSV pre tags -->
-            <div x-show="showJSON || showXML || showCSV" x-transition class="mt-4 overflow-x-auto max-h-96 overflow-y-auto border border-gray-700 rounded relative">
+            <!-- JSON and CSV pre tags -->
+            <div x-show="showJSON || showCSV" x-transition class="mt-4 overflow-x-auto max-h-96 overflow-y-auto border border-gray-700 rounded relative">
                 <button 
                     title="Copy to clipboard"
                     class="absolute top-2 right-2 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center"
@@ -293,7 +280,6 @@
             
                 <pre class="bg-gray-100 dark:bg-gray-800 p-3 rounded text-xs overflow-x-auto"
                     x-text="showJSON ? jsonContent 
-                            : showXML ? xmlContent 
                             : showCSV ? tableToCSV() : ''"></pre>
             </div>
         
@@ -330,10 +316,8 @@
             showTable: true,
             showJSON: false,
             jsonContent: "",
-            showXML: false,
             showAPI: false,
             showCSV: false,
-            xmlContent: "",
             csvContent: "",
             isUp: true,
             lastResponse: 0,
@@ -474,19 +458,6 @@ get uptimeDuration() {
                     this.jsonContent = "Failed to load JSON.";
                 }
             },
-          
-            async loadXML() {
-                try {
-                    const res = await fetch(`history/${this.safeDomain}.xml`);
-                    if (!res.ok) throw new Error("Failed to load XML");
-                    const text = await res.text();
-                    this.xmlContent = text;
-                } catch (err) {
-                    this.xmlContent = "Failed to load XML.";
-                }
-            },
-
-
             
             recalculateSummary() {
                 if (!this.history.length) return;
@@ -611,9 +582,7 @@ get uptimeDuration() {
             copyLogs(event) {
                 let logsText = "";
             
-                if (this.showXML) {
-                    logsText = this.xmlContent || "";
-                } else if (this.showJSON) {
+                if (this.showJSON) {
                     logsText = JSON.stringify(this.history, null, 2);
                 } else if (this.showCSV) {
                     logsText = this.tableToCSV();
@@ -638,7 +607,6 @@ get uptimeDuration() {
     </script>
 
     <!-- FOOTER -->
-    <small class="mt-auto text-center p-5" x-show="domain">⚡ Subscribe via RSS — <a href="index.xml" target="_blank" class="no-underline">to all updates</a> or <a :href="`history/${safeDomain}.xml`" target="_blank" class="no-underline"> only this feed (<span x-text="domain"></span>)</a></small>
     <a href="https://github.com/stefanpejcic/heimdall/" target="_blank" class="fixed bottom-4 right-4 group"><span class="text-3xl relative">🗿</span><span class="absolute right-full top-1/2 -translate-y-1/2 mr-2 hidden group-hover:block bg-gray-800 text-white text-sm px-2 py-1 rounded-lg shadow-lg whitespace-nowrap">Status page generated with 🗿 Heimdall</span></a>
   
 </body>
