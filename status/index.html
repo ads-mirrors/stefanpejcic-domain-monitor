@@ -50,20 +50,7 @@
              x-transition:leave-end="opacity-0 scale-95"
              class="absolute mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-900 ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
           
-          <ul class="py-1">
-            <!-- RSS -->
-            <li>
-              <a href="index.xml" target="_blank" 
-                 class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
-                <svg viewBox="0 0 512 512" class="w-5 h-5">
-                  <path d="M108.56 342.78a60.34 60.34 0 1 0 60.56 60.44 60.63 60.63 0 0 0-60.56-60.44Z"></path>
-                  <path d="M48 186.67v86.55c52 0 101.94 15.39 138.67 52.11s52 86.56 52 138.67h86.66c0-151.56-125.66-277.33-277.33-277.33Z"></path>
-                  <path d="M48 48v86.56c185.25 0 329.22 144.08 329.22 329.44H464C464 234.66 277.67 48 48 48Z"></path>
-                </svg>
-                RSS
-              </a>
-            </li>
-      
+          <ul class="py-1">     
             <!-- API -->
             <li @click="showApiModal = true"
                 class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
@@ -242,7 +229,6 @@
 </div>
 
 
-<small class="mt-auto text-center p-5">⚡ Subscribe via RSS — <a href="index.xml" target="_blank" class="no-underline">to all updates</a> | <button @click="showHidden = !showHidden" class="">Badge</button> | <a href="status.json" target="_blank">JSON</a></small>
 <a href="https://github.com/stefanpejcic/heimdall/" target="_blank" class="fixed bottom-4 right-4 group"><span class="text-3xl relative">🗿</span><span class="absolute right-full top-1/2 -translate-y-1/2 mr-2 hidden group-hover:block bg-gray-800 text-white text-sm px-2 py-1 rounded-lg shadow-lg whitespace-nowrap">Status page generated with 🗿 Heimdall</span></a>
 
 <script>
